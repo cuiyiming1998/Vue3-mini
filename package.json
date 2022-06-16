@@ -1,27 +1,24 @@
 {
   "name": "vue3-proxy",
   "version": "1.0.0",
-  "description": "",
   "main": "index.js",
   "devDependencies": {
-    "@babel/core": "^7.18.5",
-    "@babel/preset-env": "^7.18.2",
-    "@babel/preset-typescript": "^7.17.12",
-    "@types/jest": "^28.1.1",
-    "@vue/reactivity": "^3.2.37",
-    "babel-jest": "^28.1.1",
-    "jest": "^28.1.1",
-    "typescript": "^4.7.3"
+    "typescript": "^4.7.3",
+    "vitest": "^0.15.1"
   },
   "scripts": {
-    "test": "jest"
+    "test": "vitest packages/"
   },
-  "repository": "git+https://github.com/cuiyiming1998/vue3-proxy.git",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cuiyiming1998/vue3-proxy.git"
+  },
   "keywords": [],
   "author": "yiming.cui <cuiyiming@thinkenergy.net.cn>",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/cuiyiming1998/vue3-proxy/issues"
   },
-  "homepage": "https://github.com/cuiyiming1998/vue3-proxy#readme"
+  "homepage": "https://github.com/cuiyiming1998/vue3-proxy#readme",
+  "description": ""
 }
