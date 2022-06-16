@@ -1,5 +1,5 @@
 export { effect } from './effect'
 // export { computed } from './computed'
-export { reactive } from './reactive'
+export { reactive, shallowReactive } from './reactive'
 // export { ref, isRef } from './ref'
 // export { computed } from './computed'
