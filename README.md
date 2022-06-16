@@ -1,2 +1,2 @@
 # vue3-proxy
-vu3 proxy响应式的实现
+vu3 的简单实现
