@@ -122,4 +122,26 @@ describe('响应式测试', () => {
     expect(arr1).toEqual([18, 19, 'end'])
     expect(arr).toEqual([18, 'end', 19])
   })
+
+  it('删除属性', () => {
+    let obj = reactive({
+      name: '张三',
+      age: 18
+    })
+    let hasFn = vi.fn((...args) => {
+
+    })
+    let deleteFn = vi.fn((...args) => {})
+    effect(() => {
+      for (const key in obj) {
+        hasFn(key)
+      }
+      deleteFn(obj.name)
+    })
+    expect(hasFn).toHaveBeenCalledTimes(2)
+    expect(deleteFn).toHaveBeenCalledTimes(1)
+    delete obj.name
+    expect(deleteFn).toHaveBeenCalledTimes(2)
+    expect(hasFn).toHaveBeenCalledTimes(3)
+  })
 })

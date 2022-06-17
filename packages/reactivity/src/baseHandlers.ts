@@ -14,18 +14,33 @@ function createGetter(shallow: boolean) {
   }
 }
 
+function hasOwn(target, key) {
+  return Object.prototype.hasOwnProperty.call(target, key)
+}
+
+function deleteProperty (target, key) {
+  const hasKey = hasOwn(target, key)
+  let res = Reflect.deleteProperty(target, key)
+  if (res && hasKey) {
+    trigger(target, 'delete', key)
+  }
+  return res
+}
+
 function set(target, key, val, receiver) {
   Reflect.set(target, key, val, receiver)
-  trigger(target, 'set', key, val)
+  trigger(target, 'set', key)
   return true
 }
 
 export const mutableHandlers = {
   get: createGetter(false),
-  set
+  set,
+  deleteProperty
 }
 
 export const shallowReactiveHandlers = {
   get: createGetter(true),
-  set
+  set,
+  deleteProperty
 }

@@ -54,7 +54,7 @@ export function track(target, type, key) {
   depsMap.set(key, deps)
 }
 
-export function trigger(target, type, key, val) {
+export function trigger(target, type, key) {
   const depsMap = targetMap.get(target)
   if (!depsMap) { return }
   const deps = depsMap.get(key)
