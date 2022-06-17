@@ -10,6 +10,31 @@ let effectStack: any[] = [] // 处理effect嵌套的栈
 
 interface EffectOption {
   scheduler?: (effectFn: Function) => void
+  lazy?: boolean
+}
+
+export function effect(fn: Function, options?: EffectOption) {
+  const effectFn = () => {
+    let result
+    try {
+      cleanup(effectFn)
+      activeEffect = effectFn
+      effectStack.push(activeEffect)
+      result = fn()
+    } finally {
+      activeEffect = null
+    }
+    return result
+  }
+  effectFn.deps = [] // 需要知道effect的依赖
+  if (!options?.lazy) {
+    effectFn()
+  }
+  // 执行完 出栈
+  effectStack.pop()
+  activeEffect = effectStack[effectStack.length - 1]
+  effectFn.options = options || {}
+  return effectFn
 }
 export function track(target, type, key) {
   let depsMap = targetMap.get(target)
@@ -44,26 +69,6 @@ export function trigger(target, type, key, val) {
       }
     }
   })
-}
-
-export function effect(fn: Function, options?: EffectOption) {
-  const effectFn = () => {
-    try {
-      cleanup(effectFn)
-      activeEffect = effectFn
-      effectStack.push(activeEffect)
-      fn()
-    } finally {
-      activeEffect = null
-    }
-  }
-  effectFn.deps = [] // 需要知道effect的依赖
-  effectFn()
-  // 执行完 出栈
-  effectStack.pop()
-  activeEffect = effectStack[effectStack.length - 1]
-  effectFn.options = options || {}
-  return effectFn
 }
 
 function cleanup(effectFn) {

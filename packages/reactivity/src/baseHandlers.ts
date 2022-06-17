@@ -4,9 +4,9 @@ import { track, trigger } from './effect'
 // 管理get set delete等proxy
 
 function createGetter(shallow: boolean) {
-  return function get(target, key) {
+  return function get(target, key, receiver) {
     track(target, 'get', key)
-    let res =  Reflect.get(target, key)
+    let res =  Reflect.get(target, key, receiver)
     if (typeof res === 'object') {
       return shallow ? res : reactive(res)
     }
@@ -14,8 +14,8 @@ function createGetter(shallow: boolean) {
   }
 }
 
-function set(target, key, val) {
-  Reflect.set(target, key, val)
+function set(target, key, val, receiver) {
+  Reflect.set(target, key, val, receiver)
   trigger(target, 'set', key, val)
   return true
 }
