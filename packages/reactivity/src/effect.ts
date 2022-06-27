@@ -6,11 +6,19 @@
 // }
 const targetMap = new WeakMap()
 let activeEffect: any = null
+let shouldTrack = true
 let effectStack: any[] = [] // 处理effect嵌套的栈
 
 interface EffectOption {
   scheduler?: (effectFn: Function) => void
   lazy?: boolean
+}
+
+export function pauseTrack() {
+  shouldTrack = false
+}
+export function startTrack() {
+  shouldTrack = true
 }
 
 export function effect(fn: Function, options?: EffectOption) {
@@ -37,6 +45,9 @@ export function effect(fn: Function, options?: EffectOption) {
   return effectFn
 }
 export function track(target, type, key) {
+  if (!activeEffect || !shouldTrack) {
+    return
+  }
   let depsMap = targetMap.get(target)
   if (!depsMap) {
     depsMap = new Map()

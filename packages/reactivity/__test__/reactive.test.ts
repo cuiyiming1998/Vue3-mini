@@ -144,4 +144,15 @@ describe('响应式测试', () => {
     expect(deleteFn).toHaveBeenCalledTimes(2)
     expect(hasFn).toHaveBeenCalledTimes(3)
   })
+
+  it('数组相关的操作', () => {
+    let arr = reactive([])
+    effect(() => {
+      arr.push(1)
+    })
+    effect(() => {
+      arr.push(2)
+    })
+    expect(arr.join(',')).toBe('1,2')
+  })
 })
