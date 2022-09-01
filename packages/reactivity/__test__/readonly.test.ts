@@ -2,7 +2,7 @@ import { readonly, isReadonly } from '../src'
 import { describe, it, expect, vi } from 'vitest'
 
 describe('readonly', () => {
-  it('happy path', () => {
+  it('should make nested values readonly', () => {
     const original = {
       foo: 1,
       bar: {
@@ -13,6 +13,8 @@ describe('readonly', () => {
     expect(wrapped).not.toBe(original)
     expect(isReadonly(wrapped)).toBe(true)
     expect(isReadonly(original)).toBe(false)
+    expect(isReadonly(wrapped.bar)).toBe(true)
+    expect(isReadonly(original.bar)).toBe(false)
     expect(wrapped.foo).toBe(1)
   })
 
