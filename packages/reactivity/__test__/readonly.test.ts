@@ -1,4 +1,4 @@
-import { readonly } from '../src'
+import { readonly, isReadonly } from '../src'
 import { describe, it, expect, vi } from 'vitest'
 
 describe('readonly', () => {
@@ -11,6 +11,8 @@ describe('readonly', () => {
     }
     const wrapped = readonly(original)
     expect(wrapped).not.toBe(original)
+    expect(isReadonly(wrapped)).toBe(true)
+    expect(isReadonly(original)).toBe(false)
     expect(wrapped.foo).toBe(1)
   })
 

@@ -1,5 +1,5 @@
 export { effect, track, trigger, stop } from './effect'
 // export { computed } from './computed'
-export { reactive, readonly } from './reactive'
+export { reactive, readonly, isReactive, isReadonly } from './reactive'
 // export { ref } from './ref'
 // export { computed } from './computed'
