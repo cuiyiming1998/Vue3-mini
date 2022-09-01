@@ -1,90 +1,81 @@
-// 管理对象key的依赖
-// {
-//   target: {
-//     key: [effect1, effect2]
-//   }
-// }
-const targetMap = new WeakMap()
-let activeEffect: any = null
-let shouldTrack = true
-let effectStack: any[] = [] // 处理effect嵌套的栈
+import { extend } from './shared/index'
 
-interface EffectOption {
-  scheduler?: (effectFn: Function) => void
-  lazy?: boolean
-}
+class ReactiveEffect {
+	private _fn: any
+	public schedular: Function | undefined
+  public active: boolean = true
+	public deps: any[]
+  public onStop?: () => void
+	constructor(_fn, schedular?) {
+		this.deps = []
+		this._fn = _fn
+		this.schedular = schedular
+	}
 
-export function pauseTrack() {
-  shouldTrack = false
-}
-export function startTrack() {
-  shouldTrack = true
-}
+	run() {
+		activeEffect = this
+		return this._fn()
+	}
 
-export function effect(fn: Function, options?: EffectOption) {
-  const effectFn = () => {
-    let result
-    try {
-      cleanup(effectFn)
-      activeEffect = effectFn
-      effectStack.push(activeEffect)
-      result = fn()
-    } finally {
-      activeEffect = null
+	stop() {
+    if (this.active) {
+      cleanupEffect(this)
+      if (this.onStop) {
+        this.onStop()
+      }
+      this.active = false
     }
-    return result
-  }
-  effectFn.deps = [] // 需要知道effect的依赖
-  if (!options?.lazy) {
-    effectFn()
-  }
-  // 执行完 出栈
-  effectStack.pop()
-  activeEffect = effectStack[effectStack.length - 1]
-  effectFn.options = options || {}
-  return effectFn
+	}
 }
-export function track(target, type, key) {
-  if (!activeEffect || !shouldTrack) {
+
+function cleanupEffect(effect) {
+	effect.deps.forEach((dep: any) => {
+		dep.delete(effect)
+	})
+}
+
+const targetMap = new Map()
+export function track(target, key) {
+	let depsMap = targetMap.get(target)
+	if (!depsMap) {
+		targetMap.set(target, (depsMap = new Map()))
+	}
+
+	let dep = depsMap.get(key)
+	if (!dep) {
+		depsMap.set(key, (dep = new Set()))
+	}
+  if (!activeEffect) {
     return
   }
-  let depsMap = targetMap.get(target)
-  if (!depsMap) {
-    depsMap = new Map()
-    targetMap.set(target, depsMap)
-  }
-  let deps = depsMap.get(key)
-  if (!deps) {
-    deps = new Set()
-    depsMap.set(key, deps)
-  }
-  if (activeEffect) {
-    deps.add(activeEffect)
-    activeEffect.deps.push(deps)
-  }
-  depsMap.set(key, deps)
+	dep.add(activeEffect)
+	activeEffect.deps.push(dep)
 }
 
-export function trigger(target, type, key) {
-  const depsMap = targetMap.get(target)
-  if (!depsMap) { return }
-  const deps = depsMap.get(key)
-  if (!deps) { return }
-  const depsToRun = new Set(deps)
-  depsToRun.forEach((effectFn: any) => {
-    if (effectFn !== activeEffect) {
-      if (effectFn.options.scheduler) {
-        effectFn.options.scheduler(effectFn)
-      } else {
-        effectFn()
-      }
-    }
-  })
+export function trigger(target, key) {
+	let depsMap = targetMap.get(target)
+	let dep = depsMap.get(key)
+	for (const effect of dep) {
+		if (effect.schedular) {
+			effect.schedular()
+		} else {
+			effect.run()
+		}
+	}
 }
 
-function cleanup(effectFn) {
-  for (let i = 0; i < effectFn.deps.length; i ++) {
-    effectFn.deps[i].delete(effectFn)
-  }
-  effectFn.deps.length = 0
+let activeEffect
+export function effect(fn, options: any = {}) {
+	const _effect = new ReactiveEffect(fn, options.schedular)
+  extend(_effect, options)
+	_effect.run()
+
+	const runner: any = _effect.run.bind(_effect)
+	runner.effect = _effect
+
+	return runner
+}
+
+export function stop(runner) {
+	runner.effect.stop()
 }
