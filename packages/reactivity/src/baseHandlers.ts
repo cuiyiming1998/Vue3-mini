@@ -1,27 +1,33 @@
 import { track, trigger, reactive, readonly } from './index'
 import { ReactiveFlags } from './reactive'
-import { isObject } from './shared/index'
+import { isObject, extend } from './shared/index'
 
 const get = createGetter()
 const readonlyGet = createGetter(true)
 const set = createSetter()
+const shallowReadonlyGet = createGetter(true, true)
 
 /**
  * @description: 创建getter
  * @param { isReadonly: Boolean } 判断是否是readonly
  * @return { get }
  */
-function createGetter(isReadonly: boolean = false) {
+function createGetter(isReadonly: boolean = false, isShallow: boolean = false) {
 	return function get(target, key) {
-    if (ReactiveFlags.IS_REACTIVE === key) {
-      return !isReadonly
-    } else if (ReactiveFlags.IS_READONLY === key) {
-      return isReadonly
-    }
+		if (ReactiveFlags.IS_REACTIVE === key) {
+			return !isReadonly
+		} else if (ReactiveFlags.IS_READONLY === key) {
+			return isReadonly
+		}
 		const res = Reflect.get(target, key)
-    if (isObject(res)) {
-      return isReadonly ? readonly(res) : reactive(res)
-    }
+
+		if (isShallow) {
+			return res
+		}
+
+		if (isObject(res)) {
+			return isReadonly ? readonly(res) : reactive(res)
+		}
 		if (!isReadonly) {
 			track(target, key)
 		}
@@ -50,7 +56,11 @@ export const mutableHandlers = {
 export const readonlyHandlers = {
 	get: readonlyGet,
 	set(target, key, value) {
-    console.warn(`key: ${key} set 失败, 因为target为 readonly, ${target}`)
+		console.warn(`key: ${key} set 失败, 因为target为 readonly, ${target}`)
 		return true
 	}
 }
+
+export const shallowReadonlyHandlers = extend({}, readonlyHandlers, {
+	get: shallowReadonlyGet
+})

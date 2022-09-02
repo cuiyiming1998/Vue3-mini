@@ -1,4 +1,4 @@
-import { reactive, isReactive } from '../src'
+import { reactive, isReactive, isProxy } from '../src'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 describe('reactive', () => {
@@ -11,6 +11,7 @@ describe('reactive', () => {
     expect(observed.foo).toBe(1)
     expect(isReactive(observed)).toBe(true)
     expect(isReactive(original)).toBe(false)
+    expect(isProxy(observed)).toBe(true)
   })
 
   it('nested reactive', () => {

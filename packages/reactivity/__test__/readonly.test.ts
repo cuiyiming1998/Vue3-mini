@@ -1,4 +1,4 @@
-import { readonly, isReadonly } from '../src'
+import { readonly, isReadonly, isProxy } from '../src'
 import { describe, it, expect, vi } from 'vitest'
 
 describe('readonly', () => {
@@ -15,6 +15,7 @@ describe('readonly', () => {
     expect(isReadonly(original)).toBe(false)
     expect(isReadonly(wrapped.bar)).toBe(true)
     expect(isReadonly(original.bar)).toBe(false)
+    expect(isProxy(wrapped)).toBe(true)
     expect(wrapped.foo).toBe(1)
   })
 
