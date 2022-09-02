@@ -1,5 +1,5 @@
 export { effect, track, trigger, stop, trackEffects, triggerEffects, isTracking } from './effect'
-// export { computed } from './computed'
+export { computed } from './computed'
 export {
 	reactive,
 	readonly,
@@ -8,6 +8,6 @@ export {
 	shallowReadonly,
 	isProxy
 } from './reactive'
-export { ref } from './ref'
+export { ref, isRef, unRef, proxyRefs } from './ref'
 // export { ref } from './ref'
 // export { computed } from './computed'

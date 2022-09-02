@@ -5,6 +5,7 @@ class RefImpl {
 	private _value: any
 	public dep
   public _rawValue
+  public __v_ifRef = true
 	constructor(value) {
     this._rawValue = value
 		// 如果value是对象 --> 转成reactive
@@ -38,4 +39,31 @@ function trackRefValue(ref) {
 
 export function ref(value) {
 	return new RefImpl(value)
+}
+
+export function isRef(ref) {
+  return !!ref?.__v_ifRef
+}
+
+export function unRef(ref) {
+  // 判断是否是ref 如果是返回ref.value 否则直接返回值
+  return isRef(ref) ? ref.value : ref
+}
+
+export function proxyRefs(objectWithRefs) {
+  return new Proxy(objectWithRefs, {
+    get(target, key) {
+      // get -> 如果是ref 返回.value
+      return unRef(Reflect.get(target, key))
+    },
+
+    set(target, key, value) {
+      // 如果原来的值是ref 且新值不是ref 则替换原来的值的.value
+      if (isRef(target[key]) && !isRef(value)) {
+        return target[key].value = value
+      } else {
+        return Reflect.set(target, key, value)
+      }
+    }
+  })
 }
