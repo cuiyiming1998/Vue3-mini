@@ -1,4 +1,4 @@
-import { reactive, isReactive, isProxy } from '../src'
+import { reactive, isReactive, isProxy } from '../index'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 describe('reactive', () => {

@@ -9,5 +9,3 @@ export {
 	isProxy
 } from './reactive'
 export { ref, isRef, unRef, proxyRefs } from './ref'
-// export { ref } from './ref'
-// export { computed } from './computed'

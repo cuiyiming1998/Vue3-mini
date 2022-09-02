@@ -1,5 +1,5 @@
-import { reactive, computed } from '../src'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { reactive, computed } from '../index'
+import { describe, it, expect, vi } from 'vitest'
 
 describe('computed', () => {
   it('happy path', () => {

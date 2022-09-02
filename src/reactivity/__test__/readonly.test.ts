@@ -1,4 +1,4 @@
-import { readonly, isReadonly, isProxy } from '../src'
+import { readonly, isReadonly, isProxy } from '../index'
 import { describe, it, expect, vi } from 'vitest'
 
 describe('readonly', () => {

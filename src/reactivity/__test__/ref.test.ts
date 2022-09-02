@@ -1,4 +1,4 @@
-import { effect, ref, reactive, isRef, unRef, proxyRefs } from '../src'
+import { effect, ref, reactive, isRef, unRef, proxyRefs } from '../index'
 import { describe, it, expect, vi } from 'vitest'
 
 describe('ref', () => {

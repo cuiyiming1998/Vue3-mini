@@ -1,4 +1,4 @@
-import { reactive, effect, stop } from '../src'
+import { reactive, effect, stop } from '../index'
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 describe('effect', () => {

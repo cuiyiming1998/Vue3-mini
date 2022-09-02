@@ -1,4 +1,4 @@
-import { isReadonly, shallowReadonly } from '../src'
+import { isReadonly, shallowReadonly } from '../index'
 import { describe, it, expect, vi } from 'vitest'
 
 

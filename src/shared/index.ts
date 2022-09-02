@@ -1,8 +1,8 @@
 export const extend = Object.assign
 
 export const isObject = (val) => {
-  return null !== val && 'object' === typeof val
-}
+  return val !== null && typeof val === "object";
+};
 
 export const hasChanged = (value, newValue) => {
   return !Object.is(value, newValue)
