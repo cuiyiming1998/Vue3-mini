@@ -1,45 +1,50 @@
+import { PublicInstanceProxyHandlers } from './componentPublicInstance'
+
 export function createComponentInstance(vnode) {
-  const component = {
-    vnode,
-    type: vnode.type
-  }
-  return component
+	const component = {
+		vnode,
+		type: vnode.type,
+		setupState: {}
+	}
+	return component
 }
 
 export function setupComponent(instance) {
-  // initProps()
-  // initSlots()
+	// initProps()
+	// initSlots()
 
-  // 初始化有状态的component
-  setupStatefulComponent(instance)
+	// 初始化有状态的component
+	setupStatefulComponent(instance)
 }
 
 function setupStatefulComponent(instance: any) {
-  // 调用setup 拿到setup的返回值
-  const Component = instance.type
+	// 调用setup 拿到setup的返回值
+	const Component = instance.type
 
-  const { setup } = Component
-  if (setup) {
-    // Function or Object
-    const setupResult = setup()
+	instance.proxy = new Proxy({ _: instance }, PublicInstanceProxyHandlers)
 
-    handleSetupResult(instance, setupResult)
-  }
+	const { setup } = Component
+	if (setup) {
+		// Function or Object
+		const setupResult = setup()
+
+		handleSetupResult(instance, setupResult)
+	}
 }
 
 function handleSetupResult(instance: any, setupResult: any) {
-  // TODO 后续实现function
-  if (typeof setupResult === 'object') {
-    instance.setupState = setupResult
-  }
+	// TODO 后续实现function
+	if (typeof setupResult === 'object') {
+		instance.setupState = setupResult
+	}
 
-  finishComponentSetup(instance)
+	finishComponentSetup(instance)
 }
 
 function finishComponentSetup(instance: any) {
-  const Component = instance.type
+	const Component = instance.type
 
-  if (!instance.render) {
-    instance.render = Component.render
-  }
+	if (!instance.render) {
+		instance.render = Component.render
+	}
 }
