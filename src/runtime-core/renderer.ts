@@ -32,7 +32,14 @@ function mountElement(vnode: any, container: any) {
 	}
 	for (const key in props) {
 		const val = props[key]
-		el.setAttribute(key, val)
+    // on + Event name
+    const isOn = (key: string) => /^on[A-Z]/.test(key)
+    if (isOn(key)) {
+      const event = key.slice(2).toLocaleLowerCase()
+      el.addEventListener(event, val)
+    } else {
+      el.setAttribute(key, val)
+    }
 	}
 	container.append(el)
 }
