@@ -4,6 +4,7 @@ import { createComponentInstance, setupComponent } from './component'
 
 export function render(vnode, container) {
 	// 调用patch方法
+
 	patch(vnode, container, null)
 }
 
