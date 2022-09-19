@@ -1,7 +1,7 @@
 import { extend } from '../shared'
 
-let activeEffect
-let shouldTrack
+let activeEffect // 代表当前的副作用对象 ReactiveEffect
+let shouldTrack // 代表当前是否需要 track 收集依赖
 export class ReactiveEffect {
 	private _fn: any
 	public schedular: Function | undefined
@@ -70,7 +70,10 @@ export function trackEffects(dep) {
   dep.add(activeEffect)
   activeEffect.deps.push(dep)
 }
-
+/*
+  * 没有被 effect 包裹时，由于没有副作用函数（即没有依赖，activeEffect === undefined），不应该收集依赖
+  * 某些特殊情况，即使包裹在 effect，也不应该收集依赖（即 shouldTrack === false）。如：组件生命周期执行、组件 setup 执行
+*/
 export function isTracking() {
   return shouldTrack && undefined !== activeEffect
 }
