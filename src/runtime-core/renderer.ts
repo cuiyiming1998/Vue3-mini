@@ -6,6 +6,7 @@ import { effect } from '../reactivity'
 import { EMPTY_OBJ } from '../shared'
 
 export function createRenderer(options) {
+  // 传入自定义渲染方法
 	const {
 		createElement: hostCreateElement,
 		patchProp: hostPatchProp,
@@ -15,11 +16,12 @@ export function createRenderer(options) {
 	} = options
 	function render(vnode, container) {
 		// 调用patch方法
+    // 一开始没有n1新节点 传null
 		patch(null, vnode, container, null)
 	}
 
-	// n1 老虚拟节点
-	// n2 新的
+	// n1 老节点
+	// n2 新节点
 	function patch(n1, n2, container, parentComponent) {
 		// 去处理组件
 		// 判断是不是element类型
@@ -46,19 +48,25 @@ export function createRenderer(options) {
 	}
 
 	function processText(n1, n2: any, container: any) {
+    // 如果是text类型 则children为text: string
 		const { children } = n2
+    // 创建textNode 并赋值给el
 		const textNode = (n2.el = document.createTextNode(children))
+    // append到container上
 		container.append(textNode)
 	}
 
 	function processFragment(n1, n2: any, container: any, parentComponent) {
+    // 如果是Fragment类型 就跳过当前节点 直接mount他的子节点children
 		mountChildren(n2.children, container, parentComponent)
 	}
 
 	function processElement(n1, n2: any, container: any, parentComponent) {
 		if (!n1) {
+      // 如果没有老节点 则直接mount新节点
 			mountElement(n2, container, parentComponent)
 		} else {
+      // 有老节点 调用patchElement进行对比
 			patchElement(n1, n2, container, parentComponent)
 		}
 	}
@@ -139,21 +147,26 @@ export function createRenderer(options) {
 	}
 
 	function mountElement(n2: any, container: any, parentComponent) {
+    // 创建element节点
 		const el = (n2.el = hostCreateElement(n2.type))
 		const { children, props, shapeFlag } = n2
 		if (shapeFlag & ShapeFlags.TEXT_CHILDREN) {
+      // 如果是text 赋值给el.textContent
 			el.textContent = children
 		} else if (shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
+      // 如果是array类型 调用mountChildren
 			mountChildren(n2.children, el, parentComponent)
 		}
+    // 循环节点的props 进行props的赋值
 		for (const key in props) {
 			const val = props[key]
 			hostPatchProp(el, key, null, val)
 		}
-		// container.append(el)
+    // 生成真实DOM 添加到页面中
 		hostInsert(el, container)
 	}
 	function mountChildren(children, container, parentComponent) {
+    // 循环children, 再次调用patch
 		children.forEach(v => {
 			patch(null, v, container, parentComponent)
 		})
@@ -166,8 +179,9 @@ export function createRenderer(options) {
 	function mountComponent(initialVNode: any, container: any, parentComponent) {
 		// 创建组件实例
 		const instance = createComponentInstance(initialVNode, parentComponent)
+    // 初始化组件
 		setupComponent(instance)
-		// 设置effect
+		// 设置effect 收集依赖 获取subTree虚拟节点树
 		setupRenderEffect(instance, initialVNode, container)
 	}
 
@@ -178,21 +192,28 @@ export function createRenderer(options) {
 			if (!instance.isMounted) {
 				const { proxy } = instance
 				// 保存当前虚拟节点树 更新时作比较
+        // 初次调用时instance.subtree为 {} 获取的subTree要赋值到instance上
+        // 这里调用了render 会触发reactive ref...等的依赖收集
 				const subTree = (instance.subTree = instance.render.call(proxy))
-				// initialVNode -> element -> mountElement
+
+        // 获取subTree后再次调用patch渲染子节点
 				patch(null, subTree, container, instance)
 
+        // 更新el
 				initialVNode.el = subTree.el
 
+        // 更新instance的状态为isMounted 依赖变更时进入else分支
 				instance.isMounted = true
 			} else {
+        // 响应式对象发生改变时会进到这里
 				const { proxy } = instance
-				// 虚拟节点树
+				// 获取虚拟节点树
 				const subTree = instance.render.call(proxy)
 				const prevSubTree = instance.subTree
 				// 更新subTree
 				instance.subTree = subTree
 
+        // 新旧虚拟节点数进行对比, 重新patch
 				patch(prevSubTree, subTree, container, instance)
 			}
 		})
