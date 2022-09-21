@@ -4,13 +4,18 @@ function createElement(type) {
 	return document.createElement(type)
 }
 
-function patchProp(el, key, val) {
+function patchProp(el, key, prevVal, nextVal) {
 	const isOn = (key: string) => /^on[A-Z]/.test(key)
 	if (isOn(key)) {
 		const event = key.slice(2).toLocaleLowerCase()
-		el.addEventListener(event, val)
+		el.addEventListener(event, nextVal)
 	} else {
-		el.setAttribute(key, val)
+    // 如果prop删除了(赋值undefined或null) 则removeAttr
+    if (undefined === nextVal || null === nextVal) {
+      el.removeAttribute(key, nextVal)
+    } else {
+      el.setAttribute(key, nextVal)
+    }
 	}
 }
 
