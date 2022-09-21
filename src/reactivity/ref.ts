@@ -13,15 +13,17 @@ class RefImpl {
 		this.dep = new Set()
 	}
 	get value() {
+    // 这时被effect包裹时 访问.value 会触发track收集依赖
 		trackRefValue(this)
 		return this._value
 	}
 	set value(newValue) {
-		// 先修改value的值 再trigger
     // 如果ref是对象 则_value为proxy 需要用一个raw值来代替判断
 		if (hasChanged(newValue, this._rawValue)) {
+      // 先修改value的值
       this._rawValue = newValue
 			this._value = convert(newValue)
+      // 执行trigger更新
 			triggerEffects(this.dep)
 		}
 	}
