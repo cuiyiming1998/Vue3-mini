@@ -9,7 +9,9 @@ export function createRenderer(options) {
 	const {
 		createElement: hostCreateElement,
 		patchProp: hostPatchProp,
-		insert: hostInsert
+		insert: hostInsert,
+		remove: hostRemove,
+		setElementText: hostSetElementText
 	} = options
 	function render(vnode, container) {
 		// 调用patch方法
@@ -28,12 +30,15 @@ export function createRenderer(options) {
 				processFragment(n1, n2, container, parentComponent)
 				break
 			case Text:
+				// Text -> 渲染为textNode节点
 				processText(n1, n2, container)
 				break
 			default:
 				if (shapeFlag & ShapeFlags.ELEMENT) {
+					// 处理element类型
 					processElement(n1, n2, container, parentComponent)
 				} else if (shapeFlag & ShapeFlags.STATEFUL_COMPONENT) {
+					// 处理component类型
 					processComponent(n1, n2, container, parentComponent)
 				}
 				break
@@ -47,18 +52,18 @@ export function createRenderer(options) {
 	}
 
 	function processFragment(n1, n2: any, container: any, parentComponent) {
-		mountChildren(n2, container, parentComponent)
+		mountChildren(n2.children, container, parentComponent)
 	}
 
 	function processElement(n1, n2: any, container: any, parentComponent) {
 		if (!n1) {
 			mountElement(n2, container, parentComponent)
 		} else {
-			patchElement(n1, n2, container)
+			patchElement(n1, n2, container, parentComponent)
 		}
 	}
 
-	function patchElement(n1, n2, container) {
+	function patchElement(n1, n2, container, parentComponent) {
 		console.log('pathElement')
 		console.log('n1', n1)
 		console.log('n2', n2)
@@ -66,9 +71,50 @@ export function createRenderer(options) {
 		const oldProps = n1.props || EMPTY_OBJ
 		const newProps = n2.props || EMPTY_OBJ
 
+		// 获取el 供hostPatchProps使用
 		const el = (n2.el = n1.el)
 
+		// 更新子节点children
+		patchChildren(n1, n2, el, parentComponent)
+		// 更新props
 		patchProps(el, oldProps, newProps)
+	}
+
+	function patchChildren(n1, n2, container, parentComponent) {
+		const prevShapeFlag = n1.shapeFlag
+		const c1 = n1.children
+		const { shapeFlag } = n2
+		const c2 = n2.children
+		// 进行对比新老children
+		if (shapeFlag & ShapeFlags.TEXT_CHILDREN) {
+			// 新节点为textChildren类型
+			if (prevShapeFlag & ShapeFlags.ARRAY_CHILDREN) {
+				// 老节点为arrayChildren
+				// 1. 把老节点的children清空
+				unmountChildren(n1.children)
+			}
+      // 2. 设置新的text
+			if (c1 !== c2) {
+				hostSetElementText(container, c2)
+			}
+		} else {
+      // 新节点为array类型
+      if (prevShapeFlag & ShapeFlags.TEXT_CHILDREN) {
+        // 老节点为text
+        // 1. 清空text
+        hostSetElementText(container, '')
+        // 2. mountChildren
+        mountChildren(c2, container, parentComponent)
+      }
+    }
+	}
+
+	function unmountChildren(children) {
+		// 循环children 删除子节点
+		for (let i = 0; i < children.length; i++) {
+			const el = children[i].el
+			hostRemove(el)
+		}
 	}
 
 	function patchProps(el, oldProps, newProps) {
@@ -98,7 +144,7 @@ export function createRenderer(options) {
 		if (shapeFlag & ShapeFlags.TEXT_CHILDREN) {
 			el.textContent = children
 		} else if (shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
-			mountChildren(n2, el, parentComponent)
+			mountChildren(n2.children, el, parentComponent)
 		}
 		for (const key in props) {
 			const val = props[key]
@@ -107,8 +153,8 @@ export function createRenderer(options) {
 		// container.append(el)
 		hostInsert(el, container)
 	}
-	function mountChildren(vnode, container, parentComponent) {
-		vnode.children.forEach(v => {
+	function mountChildren(children, container, parentComponent) {
+		children.forEach(v => {
 			patch(null, v, container, parentComponent)
 		})
 	}
@@ -121,14 +167,14 @@ export function createRenderer(options) {
 		// 创建组件实例
 		const instance = createComponentInstance(initialVNode, parentComponent)
 		setupComponent(instance)
-    // 设置effect
+		// 设置effect
 		setupRenderEffect(instance, initialVNode, container)
 	}
 
 	function setupRenderEffect(instance: any, initialVNode: any, container: any) {
 		// 调用render时 会触发响应式对象ref/reactive的get收集依赖
-    // 响应式对象改变了 会触发内部的函数 自动调用render生成新的subTree
-    effect(() => {
+		// 响应式对象改变了 会触发内部的函数 自动调用render生成新的subTree
+		effect(() => {
 			if (!instance.isMounted) {
 				const { proxy } = instance
 				// 保存当前虚拟节点树 更新时作比较

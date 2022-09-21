@@ -23,10 +23,25 @@ function insert(el, parent) {
 	parent.append(el)
 }
 
+function remove(child) {
+  // 删除当前元素
+  const parent = child.parentNode
+  if (parent) {
+    parent.removeChild(child)
+  }
+}
+
+function setElementText(el, text) {
+  // 设置text节点
+  el.textContent = text
+}
+
 const renderer: any = createRenderer({
 	createElement,
 	patchProp,
-	insert
+	insert,
+  remove,
+  setElementText
 })
 
 export function createApp(...args) {
