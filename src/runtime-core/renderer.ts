@@ -204,8 +204,54 @@ export function createRenderer(options) {
 				i++
 			}
 		} else {
-      // 乱序的部分
-    }
+			// 乱序的部分 中间对比
+			// i -> 左侧 e1 -> 更新前的e  e2 -> 更新后的e
+			let s1 = i
+			let s2 = i
+			const toBePatched = e2 - s2 + 1 // 需要patch的新节点的数量
+			let patched = 0 // 已经patch过的数量
+			// 通过key建立映射表
+			// key -> i
+			const keyToNewIndex = new Map()
+			for (let i = s2; i <= e2; i++) {
+				const nextChild = c2[i]
+				keyToNewIndex.set(nextChild.key, i)
+			}
+
+			// 去map里查找更新后是否存在
+			for (let i = s1; i <= e1; i++) {
+				const prevChild = c1[i]
+				// 如果patch过的数量 >= 需要patch的数量
+				// 说明所有新节点都已经patch过了, 老节点直接删除掉 不需要再走下面的逻辑了
+				if (patched >= toBePatched) {
+					hostRemove(prevChild.el)
+					continue
+				}
+				let newIndex
+				if (prevChild.key != null) {
+					newIndex = keyToNewIndex.get(prevChild.key)
+				} else {
+					// 如果通过映射表找不到, 则需要遍历寻找
+					for (let j = s2; j < e2; j++) {
+						if (isSameVNodeType(prevChild, c2[j])) {
+							// 如果是same 则说明此节点更新后也存在
+							// 给newIndex的值更新成j 然后跳出循环
+							newIndex = j
+							break
+						}
+					}
+				}
+
+				if (newIndex === undefined) {
+					// 如果newIndex没有被赋值, 则说明节点被删除了
+					hostRemove(prevChild.el)
+				} else {
+					// 如果存在, 则需要调用patch深度对比
+					patch(prevChild, c2[newIndex], container, parentComponent, null)
+					patched++
+				}
+			}
+		}
 	}
 
 	function unmountChildren(children) {
