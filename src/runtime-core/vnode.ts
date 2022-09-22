@@ -13,6 +13,7 @@ export function createVNode(type, props?, children?) {
 		props, // props
 		children, // 孩子节点, 可以是text(文本节点) 或者 array(嵌套子节点)
 		shapeFlag: getShapeFlag(type), // 类型标识
+    key: props && props.key,
 		el: null // 当前实例
 	}
   if (typeof children === 'string') {
