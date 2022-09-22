@@ -9,6 +9,7 @@ export function createComponentInstance(vnode, parent) {
 	const component = {
 		vnode, // 当前vnode
 		type: vnode.type, // vnode的type
+    next: null,
 		setupState: {}, // setup的返回值
     props: {}, // 当前组件props
     slots: {}, // 当前组件的插槽

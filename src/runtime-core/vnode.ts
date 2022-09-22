@@ -11,6 +11,7 @@ export function createVNode(type, props?, children?) {
 	const vnode = {
 		type, // 组件类型
 		props, // props
+    component: null,
 		children, // 孩子节点, 可以是text(文本节点) 或者 array(嵌套子节点)
 		shapeFlag: getShapeFlag(type), // 类型标识
     key: props && props.key,

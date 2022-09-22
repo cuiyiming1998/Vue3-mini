@@ -4,6 +4,7 @@ import { createComponentInstance, setupComponent } from './component'
 import { createAppAPI } from './createApp'
 import { effect } from '../reactivity'
 import { EMPTY_OBJ } from '../shared'
+import { shouldUpdateComponent } from './componentUpdateUtils'
 
 export function createRenderer(options) {
 	// 传入自定义渲染方法
@@ -289,10 +290,10 @@ export function createRenderer(options) {
 				const nextIndex = i + s2
 				const nextChild = c2[nextIndex]
 				const anchor = nextIndex + 1 < l2 ? c2[nextIndex + 1].el : null
-        if (newIndexToOldIndexMap[i] === 0) {
-          // 新节点新增的
-          patch(null, nextChild, container, parentComponent, anchor)
-        }
+				if (newIndexToOldIndexMap[i] === 0) {
+					// 新节点新增的
+					patch(null, nextChild, container, parentComponent, anchor)
+				}
 				if (moved) {
 					if (j < 0 || i !== increasingNewIndexSequence[j]) {
 						// 如果和递增子序列内不相等, 则说明需要移动位置
@@ -367,7 +368,25 @@ export function createRenderer(options) {
 		parentComponent,
 		anchor
 	) {
-		mountComponent(n2, container, parentComponent, anchor)
+		if (!n1) {
+			mountComponent(n2, container, parentComponent, anchor)
+		} else {
+			updateComponent(n1, n2)
+		}
+	}
+
+	function updateComponent(n1, n2) {
+    const instance = (n2.component = n1.component)
+    // 如果props相等 就不需要更新
+    if (shouldUpdateComponent(n1, n2)) {
+      // 下次要更新的节点
+      instance.next = n2
+      instance.update()
+    } else {
+      // 不执行update的话 还是需要给el vnode重新赋值的
+      n2.el = n1.el
+      instance.vnode = n2
+    }
 	}
 
 	function mountComponent(
@@ -377,7 +396,10 @@ export function createRenderer(options) {
 		anchor
 	) {
 		// 创建组件实例
-		const instance = createComponentInstance(initialVNode, parentComponent)
+		const instance = (initialVNode.component = createComponentInstance(
+			initialVNode,
+			parentComponent
+		))
 		// 初始化组件
 		setupComponent(instance)
 		// 设置effect 收集依赖 获取subTree虚拟节点树
@@ -392,8 +414,10 @@ export function createRenderer(options) {
 	) {
 		// 调用render时 会触发响应式对象ref/reactive的get收集依赖
 		// 响应式对象改变了 会触发内部的函数 自动调用render生成新的subTree
-		effect(() => {
+    // 保存更新函数
+		instance.update = effect(() => {
 			if (!instance.isMounted) {
+				console.log('init')
 				const { proxy } = instance
 				// 保存当前虚拟节点树 更新时作比较
 				// 初次调用时instance.subtree为 {} 获取的subTree要赋值到instance上
@@ -410,7 +434,14 @@ export function createRenderer(options) {
 				instance.isMounted = true
 			} else {
 				// 响应式对象发生改变时会进到这里
-				const { proxy } = instance
+				console.log('update')
+        // vnode是更新之前的 next是更新之后的
+				const { proxy, next, vnode } = instance
+        // 更新el
+        if (next) {
+          next.el = vnode.el
+          updateComponentPreRender(instance, next)
+        }
 				// 获取虚拟节点树
 				const subTree = instance.render.call(proxy)
 				const prevSubTree = instance.subTree
@@ -422,6 +453,13 @@ export function createRenderer(options) {
 			}
 		})
 	}
+
+  function updateComponentPreRender(instance, nextVNode) {
+    instance.vnode = nextVNode
+    instance.next = null
+    // 更新props
+    instance.props = nextVNode.props
+  }
 
 	return {
 		createApp: createAppAPI(render)

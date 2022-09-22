@@ -2,7 +2,8 @@ import { hasOwn } from '../shared'
 
 const publicPropertiesMap = {
 	$el: i => i.vnode.el, // 当前组件vnode实例
-	$slots: i => i.slots // 当前组件slots
+	$slots: i => i.slots, // 当前组件slots
+  $props: i => i.props
 }
 
 export const PublicInstanceProxyHandlers = {
