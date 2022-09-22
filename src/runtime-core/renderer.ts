@@ -213,6 +213,16 @@ export function createRenderer(options) {
 			// 通过key建立映射表
 			// key -> i
 			const keyToNewIndex = new Map()
+			// 创建新老节点index映射关系
+			const newIndexToOldIndexMap = new Array(toBePatched)
+			for (let i = 0; i < toBePatched; i++) {
+				newIndexToOldIndexMap[i] = 0
+			}
+
+			// 是否移动了位置
+			let moved = false
+			let maxNewIndexSoFar = 0
+
 			for (let i = s2; i <= e2; i++) {
 				const nextChild = c2[i]
 				keyToNewIndex.set(nextChild.key, i)
@@ -232,7 +242,7 @@ export function createRenderer(options) {
 					newIndex = keyToNewIndex.get(prevChild.key)
 				} else {
 					// 如果通过映射表找不到, 则需要遍历寻找
-					for (let j = s2; j < e2; j++) {
+					for (let j = s2; j <= e2; j++) {
 						if (isSameVNodeType(prevChild, c2[j])) {
 							// 如果是same 则说明此节点更新后也存在
 							// 给newIndex的值更新成j 然后跳出循环
@@ -246,9 +256,50 @@ export function createRenderer(options) {
 					// 如果newIndex没有被赋值, 则说明节点被删除了
 					hostRemove(prevChild.el)
 				} else {
-					// 如果存在, 则需要调用patch深度对比
+					// 老节点还存在
+					if (newIndex >= maxNewIndexSoFar) {
+						// 大于等于记录的点, 说明相对位置没有改变
+						maxNewIndexSoFar = newIndex
+					} else {
+						// 新得到的index比记录的点小 说明需要移动位置
+						moved = true
+					}
+					// 赋值新老节点位置的映射关系 从0开始
+					// index -> 位置
+					// 0 代表没有 所以等号右侧需要 + 1
+					newIndexToOldIndexMap[newIndex - s2] = i + 1
+					// 调用patch深度对比
 					patch(prevChild, c2[newIndex], container, parentComponent, null)
 					patched++
+				}
+			}
+
+			// 求最长递增子序列
+			// 最长递增子序列为稳定的序列 不需要进行移动
+			// [4, 2, 3] -> [1, 2]
+			const increasingNewIndexSequence = moved
+				? getSequence(newIndexToOldIndexMap)
+				: []
+			// 创建指针
+			let j = increasingNewIndexSequence.length - 1
+
+			// 插入时使用insertBefore 所以必须保证当前插入的节点的后一个节点为稳定状态
+			// 所以采用倒序循环的方式进行移动
+			for (let i = toBePatched - 1; i >= 0; i--) {
+				const nextIndex = i + s2
+				const nextChild = c2[nextIndex]
+				const anchor = nextIndex + 1 < l2 ? c2[nextIndex + 1].el : null
+        if (newIndexToOldIndexMap[i] === 0) {
+          // 新节点新增的
+          patch(null, nextChild, container, parentComponent, anchor)
+        }
+				if (moved) {
+					if (j < 0 || i !== increasingNewIndexSequence[j]) {
+						// 如果和递增子序列内不相等, 则说明需要移动位置
+						hostInsert(nextChild.el, container, anchor)
+					} else {
+						j--
+					}
 				}
 			}
 		}
@@ -375,4 +426,45 @@ export function createRenderer(options) {
 	return {
 		createApp: createAppAPI(render)
 	}
+}
+
+function getSequence(arr) {
+	const p = arr.slice()
+	const result = [0]
+	let i, j, u, v, c
+	const len = arr.length
+	for (i = 0; i < len; i++) {
+		const arrI = arr[i]
+		if (arrI !== 0) {
+			j = result[result.length - 1]
+			if (arr[j] < arrI) {
+				p[i] = j
+				result.push(i)
+				continue
+			}
+			u = 0
+			v = result.length - 1
+			while (u < v) {
+				c = (u + v) >> 1
+				if (arr[result[c]] < arrI) {
+					u = c + 1
+				} else {
+					v = c
+				}
+			}
+			if (arrI < arr[result[u]]) {
+				if (u > 0) {
+					p[i] = result[u - 1]
+				}
+				result[u] = i
+			}
+		}
+	}
+	u = result.length
+	v = result[u - 1]
+	while (u-- > 0) {
+		result[u] = v
+		v = p[v]
+	}
+	return result
 }
