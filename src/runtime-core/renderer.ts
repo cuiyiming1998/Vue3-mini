@@ -5,6 +5,7 @@ import { createAppAPI } from './createApp'
 import { effect } from '../reactivity'
 import { EMPTY_OBJ } from '../shared'
 import { shouldUpdateComponent } from './componentUpdateUtils'
+import { queueJobs } from './scheduler'
 
 export function createRenderer(options) {
 	// 传入自定义渲染方法
@@ -376,17 +377,17 @@ export function createRenderer(options) {
 	}
 
 	function updateComponent(n1, n2) {
-    const instance = (n2.component = n1.component)
-    // 如果props相等 就不需要更新
-    if (shouldUpdateComponent(n1, n2)) {
-      // 下次要更新的节点
-      instance.next = n2
-      instance.update()
-    } else {
-      // 不执行update的话 还是需要给el vnode重新赋值的
-      n2.el = n1.el
-      instance.vnode = n2
-    }
+		const instance = (n2.component = n1.component)
+		// 如果props相等 就不需要更新
+		if (shouldUpdateComponent(n1, n2)) {
+			// 下次要更新的节点
+			instance.next = n2
+			instance.update()
+		} else {
+			// 不执行update的话 还是需要给el vnode重新赋值的
+			n2.el = n1.el
+			instance.vnode = n2
+		}
 	}
 
 	function mountComponent(
@@ -414,52 +415,63 @@ export function createRenderer(options) {
 	) {
 		// 调用render时 会触发响应式对象ref/reactive的get收集依赖
 		// 响应式对象改变了 会触发内部的函数 自动调用render生成新的subTree
-    // 保存更新函数
-		instance.update = effect(() => {
-			if (!instance.isMounted) {
-				console.log('init')
-				const { proxy } = instance
-				// 保存当前虚拟节点树 更新时作比较
-				// 初次调用时instance.subtree为 {} 获取的subTree要赋值到instance上
-				// 这里调用了render 会触发reactive ref...等的依赖收集
-				const subTree = (instance.subTree = instance.render.call(proxy))
+		// 保存更新函数
+		instance.update = effect(
+			() => {
+				if (!instance.isMounted) {
+					console.log('setupRenderEffect -> effect -> init')
+					const { proxy } = instance
+					// 保存当前虚拟节点树 更新时作比较
+					// 初次调用时instance.subtree为 {} 获取的subTree要赋值到instance上
+					// 这里调用了render 会触发reactive ref...等的依赖收集
+					const subTree = (instance.subTree = instance.render.call(proxy))
 
-				// 获取subTree后再次调用patch渲染子节点
-				patch(null, subTree, container, instance, anchor)
+					// 获取subTree后再次调用patch渲染子节点
+					patch(null, subTree, container, instance, anchor)
 
-				// 更新el
-				initialVNode.el = subTree.el
+					// 更新el
+					initialVNode.el = subTree.el
 
-				// 更新instance的状态为isMounted 依赖变更时进入else分支
-				instance.isMounted = true
-			} else {
-				// 响应式对象发生改变时会进到这里
-				console.log('update')
-        // vnode是更新之前的 next是更新之后的
-				const { proxy, next, vnode } = instance
-        // 更新el
-        if (next) {
-          next.el = vnode.el
-          updateComponentPreRender(instance, next)
-        }
-				// 获取虚拟节点树
-				const subTree = instance.render.call(proxy)
-				const prevSubTree = instance.subTree
-				// 更新subTree
-				instance.subTree = subTree
+					// 更新instance的状态为isMounted 依赖变更时进入else分支
+					instance.isMounted = true
+				} else {
+					// 响应式对象发生改变时会进到这里
+					console.log('setupRenderEffect -> effect -> update')
+					// vnode是更新之前的 next是更新之后的
+					const { proxy, next, vnode } = instance
+					// 更新el
+					if (next) {
+						next.el = vnode.el
+						updateComponentPreRender(instance, next)
+					}
+					// 获取虚拟节点树
+					const subTree = instance.render.call(proxy)
+					const prevSubTree = instance.subTree
+					// 更新subTree
+					instance.subTree = subTree
 
-				// 新旧虚拟节点数进行对比, 重新patch
-				patch(prevSubTree, subTree, container, instance, anchor)
+					// 新旧虚拟节点数进行对比, 重新patch
+					patch(prevSubTree, subTree, container, instance, anchor)
+				}
+			},
+      {
+        // 如果组件中有循环的话, 那么就会多次update组件造成性能浪费
+        // 将所有update作为job存储在一个队列中
+        // 当所有的同步任务结束之后 再统一拿出来执行
+				scheduler() {
+					console.log('组件更新 ---- 执行scheduler储存jobs')
+          queueJobs(instance.update)
+				}
 			}
-		})
+		)
 	}
 
-  function updateComponentPreRender(instance, nextVNode) {
-    instance.vnode = nextVNode
-    instance.next = null
-    // 更新props
-    instance.props = nextVNode.props
-  }
+	function updateComponentPreRender(instance, nextVNode) {
+		instance.vnode = nextVNode
+		instance.next = null
+		// 更新props
+		instance.props = nextVNode.props
+	}
 
 	return {
 		createApp: createAppAPI(render)

@@ -6,14 +6,14 @@ const targetMap = new Map()
 
 export class ReactiveEffect {
 	private _fn: any
-	public schedular: Function | undefined
+	public scheduler: Function | undefined
   public active: boolean = true
 	public deps: any[]
   public onStop?: () => void
-	constructor(_fn, schedular?) {
+	constructor(_fn, scheduler?) {
 		this.deps = []
 		this._fn = _fn
-		this.schedular = schedular
+		this.scheduler = scheduler
 	}
 
 	run() {
@@ -100,18 +100,18 @@ export function trigger(target, key) {
   triggerEffects(dep)
 }
 export function triggerEffects(dep) {
-  // 循环dep 如果有schedular 则执行
+  // 循环dep 如果有scheduler 则执行
   // 否则run
   for (const effect of dep) {
-		if (effect.schedular) {
-			effect.schedular()
+		if (effect.scheduler) {
+			effect.scheduler()
 		} else {
 			effect.run()
 		}
 	}
 }
 export function effect(fn, options: any = {}) {
-	const _effect = new ReactiveEffect(fn, options.schedular)
+	const _effect = new ReactiveEffect(fn, options.scheduler)
   // 创建activeEffect
   extend(_effect, options)
   // 创建时执行一次

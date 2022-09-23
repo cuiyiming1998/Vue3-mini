@@ -30,14 +30,14 @@ describe('effect', () => {
 		expect(r).toBe('foo')
 	})
 
-	it('schedular', () => {
-		// 通过effect的第二个参数 给定一个schedular
+	it('scheduler', () => {
+		// 通过effect的第二个参数 给定一个scheduler
 		// 当effect第一次执行的时候, 执行fn
-		// 当响应式对象更新的时候 不会执行fn, 而是执行schedular
+		// 当响应式对象更新的时候 不会执行fn, 而是执行scheduler
 		// 当执行runner的时候 会再次执行fn
 		let dummy
 		let run: any
-		const schedular = vi.fn(() => {
+		const scheduler = vi.fn(() => {
 			run = runner
 		})
 		const obj = reactive({ foo: 1 })
@@ -45,11 +45,11 @@ describe('effect', () => {
 			() => {
 				dummy = obj.foo
 			},
-			{ schedular }
+			{ scheduler }
 		)
-		expect(schedular).not.toHaveBeenCalled()
+		expect(scheduler).not.toHaveBeenCalled()
 		obj.foo++
-		expect(schedular).toHaveBeenCalledTimes(1)
+		expect(scheduler).toHaveBeenCalledTimes(1)
 		expect(dummy).toBe(1)
 		run()
 		expect(dummy).toBe(2)
