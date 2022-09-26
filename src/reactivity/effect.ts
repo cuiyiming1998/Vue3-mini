@@ -1,17 +1,17 @@
 import { extend } from '../shared'
 
 let activeEffect // 代表当前的副作用对象 ReactiveEffect
-let shouldTrack // 代表当前是否需要 track 收集依赖
-const targetMap = new Map()
+let shouldTrack = false // 代表当前是否需要 track 收集依赖
+const targetMap = new WeakMap()
 
 export class ReactiveEffect {
 	private _fn: any
 	public scheduler: Function | undefined
   public active: boolean = true
-	public deps: any[]
+	public deps: any[] = []
   public onStop?: () => void
 	constructor(_fn, scheduler?) {
-		this.deps = []
+    console.log("创建 ReactiveEffect 对象");
 		this._fn = _fn
 		this.scheduler = scheduler
 	}
@@ -25,6 +25,8 @@ export class ReactiveEffect {
     shouldTrack = true
     // shouldTrack为true
     // 执行fn收集依赖
+    // 执行的时候给全局的 activeEffect 赋值
+    // 利用全局属性来获取当前的 effect
     activeEffect = this
     const result = this._fn()
     // 收集完依赖将关闭shouldTrack
@@ -50,6 +52,8 @@ export class ReactiveEffect {
 
 function cleanupEffect(effect) {
   // 清除effect.deps
+  // 找到所有依赖这个 effect 的响应式对象
+  // 从这些响应式对象里面把 effect 给删除掉
 	effect.deps.forEach((dep: any) => {
 		dep.delete(effect)
 	})
@@ -60,6 +64,7 @@ export function track(target, key) {
   if (!isTracking()) {
     return
   }
+  console.log(`触发 track -> target: ${target} key:${key}`);
   // 从targetMap中获取depsMap
 	let depsMap = targetMap.get(target)
 	if (!depsMap) {
@@ -104,6 +109,9 @@ export function triggerEffects(dep) {
   // 否则run
   for (const effect of dep) {
 		if (effect.scheduler) {
+      // scheduler 可以让用户自己选择调用的时机
+      // 这样就可以灵活的控制调用了
+      // 在 runtime-core 中，就是使用了 scheduler 实现了在 next ticker 中调用的逻辑
 			effect.scheduler()
 		} else {
 			effect.run()
@@ -121,6 +129,8 @@ export function effect(fn, options: any = {}) {
 	const runner: any = _effect.run.bind(_effect)
 	runner.effect = _effect
 
+  // 把 _effect.run 这个方法返回
+  // 让用户可以自行选择调用的时机（调用 fn）
 	return runner
 }
 
