@@ -12,6 +12,7 @@
   },
   "scripts": {
     "test": "vitest src/",
+    "test-compiler": "vitest src/compiler-core",
     "build": "rollup -c rollup.config.js"
   },
   "repository": {
