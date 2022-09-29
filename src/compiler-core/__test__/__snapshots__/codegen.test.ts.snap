@@ -1,0 +1,3 @@
+// Vitest Snapshot v1
+
+exports[`codegen > string 1`] = `"return function render(_ctx, _cache){return'hi'}"`;
