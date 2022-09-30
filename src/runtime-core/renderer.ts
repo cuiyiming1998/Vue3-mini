@@ -546,7 +546,7 @@ export function createRenderer(options) {
 					console.log(`${instance.type.name}:调用 render,获取 subTree`)
 					const { proxy } = instance
 					// 可在 render 函数中通过 this 来使用 proxy
-					const subTree = (instance.subTree = instance.render.call(proxy))
+					const subTree = (instance.subTree = instance.render.call(proxy, proxy))
 
 					// 这里触发beforeMount
 					console.log(`${instance.type.name}:触发 beforeMount hook`)
@@ -587,7 +587,7 @@ export function createRenderer(options) {
 						updateComponentPreRender(instance, next)
 					}
 					// 获取虚拟节点树
-					const subTree = instance.render.call(proxy)
+					const subTree = instance.render.call(proxy, proxy)
 					const prevSubTree = instance.subTree
 					// 更新subTree
 					instance.subTree = subTree

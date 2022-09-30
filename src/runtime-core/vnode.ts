@@ -2,6 +2,10 @@ import { ShapeFlags } from './../shared/shapeFlags'
 
 export const Fragment = Symbol('Fragment')
 export const Text = Symbol('Text')
+
+export {
+  createVNode as createElementVNode
+}
 /*
   type -> 'div' / 'span'
   props -> attribute
