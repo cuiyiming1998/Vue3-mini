@@ -1,17 +1,17 @@
 import typescript from "@rollup/plugin-typescript"
-import pkg from './package.json'
+
 export default {
-  input: './src/index.ts',
+  input: './packages/vue/src/index.ts',
   output: [
     // 1. cjs -> commonjs规范
     // 2. esm -> 标准化模块规范
     {
       format: 'cjs',
-      file: pkg.main
+      file: 'packages/vue/dist/vue3-mini.cjs.js'
     },
     {
       format: 'es',
-      file: pkg.module
+      file: 'packages/vue/dist/vue3-mini.esm.js'
     },
   ],
   plugins: [

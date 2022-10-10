@@ -11,8 +11,7 @@
     "vitest": "^0.22.1"
   },
   "scripts": {
-    "test": "vitest src/",
-    "test-compiler": "vitest src/compiler-core",
+    "test": "vitest",
     "build": "rollup -c rollup.config.js"
   },
   "repository": {
