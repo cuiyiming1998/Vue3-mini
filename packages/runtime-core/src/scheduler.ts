@@ -32,8 +32,8 @@ function queueFlush() {
 	nextTick(flushJobs)
 }
 
-export function queuePreFlushCb(cb) {
-  activePrefFlushCbs.push(cb)
+export function queuePreFlushCb(job) {
+  activePrefFlushCbs.push(job)
   queueFlush()
 }
 
