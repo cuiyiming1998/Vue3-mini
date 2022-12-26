@@ -664,6 +664,66 @@ function computed(getter) {
     return new ComputedRefImpl(getter);
 }
 
+class RefImpl {
+    constructor(value) {
+        this.__v_ifRef = true;
+        this._rawValue = value;
+        // 如果value是对象 --> 转成reactive
+        this._value = convert(value);
+        this.dep = new Set();
+    }
+    get value() {
+        // 这时被effect包裹时 访问.value 会触发track收集依赖
+        trackRefValue(this);
+        return this._value;
+    }
+    set value(newValue) {
+        // 如果ref是对象 则_value为proxy 需要用一个raw值来代替判断
+        if (hasChanged(newValue, this._rawValue)) {
+            // 先修改value的值
+            this._rawValue = newValue;
+            this._value = convert(newValue);
+            // 执行trigger更新
+            triggerEffects(this.dep);
+        }
+    }
+}
+function convert(value) {
+    return isObject(value) ? reactive(value) : value;
+}
+function trackRefValue(ref) {
+    if (isTracking()) {
+        trackEffects(ref.dep);
+    }
+}
+function ref(value) {
+    return new RefImpl(value);
+}
+function isRef(ref) {
+    return !!(ref === null || ref === void 0 ? void 0 : ref.__v_ifRef);
+}
+function unRef(ref) {
+    // 判断是否是ref 如果是返回ref.value 否则直接返回值
+    return isRef(ref) ? ref.value : ref;
+}
+function proxyRefs(objectWithRefs) {
+    return new Proxy(objectWithRefs, {
+        get(target, key) {
+            // get -> 如果是ref 返回.value
+            return unRef(Reflect.get(target, key));
+        },
+        set(target, key, value) {
+            // 如果原来的值是ref 且新值不是ref 则替换原来的值的.value
+            if (isRef(target[key]) && !isRef(value)) {
+                return target[key].value = value;
+            }
+            else {
+                return Reflect.set(target, key, value);
+            }
+        }
+    });
+}
+
 const get = createGetter();
 const readonlyGet = createGetter(true); // readonly的get
 const set = createSetter();
@@ -757,66 +817,6 @@ function createActiveObject(target, baseHandlers) {
         return;
     }
     return new Proxy(target, baseHandlers);
-}
-
-class RefImpl {
-    constructor(value) {
-        this.__v_ifRef = true;
-        this._rawValue = value;
-        // 如果value是对象 --> 转成reactive
-        this._value = convert(value);
-        this.dep = new Set();
-    }
-    get value() {
-        // 这时被effect包裹时 访问.value 会触发track收集依赖
-        trackRefValue(this);
-        return this._value;
-    }
-    set value(newValue) {
-        // 如果ref是对象 则_value为proxy 需要用一个raw值来代替判断
-        if (hasChanged(newValue, this._rawValue)) {
-            // 先修改value的值
-            this._rawValue = newValue;
-            this._value = convert(newValue);
-            // 执行trigger更新
-            triggerEffects(this.dep);
-        }
-    }
-}
-function convert(value) {
-    return isObject(value) ? reactive(value) : value;
-}
-function trackRefValue(ref) {
-    if (isTracking()) {
-        trackEffects(ref.dep);
-    }
-}
-function ref(value) {
-    return new RefImpl(value);
-}
-function isRef(ref) {
-    return !!(ref === null || ref === void 0 ? void 0 : ref.__v_ifRef);
-}
-function unRef(ref) {
-    // 判断是否是ref 如果是返回ref.value 否则直接返回值
-    return isRef(ref) ? ref.value : ref;
-}
-function proxyRefs(objectWithRefs) {
-    return new Proxy(objectWithRefs, {
-        get(target, key) {
-            // get -> 如果是ref 返回.value
-            return unRef(Reflect.get(target, key));
-        },
-        set(target, key, value) {
-            // 如果原来的值是ref 且新值不是ref 则替换原来的值的.value
-            if (isRef(target[key]) && !isRef(value)) {
-                return target[key].value = value;
-            }
-            else {
-                return Reflect.set(target, key, value);
-            }
-        }
-    });
 }
 
 /**
@@ -1804,16 +1804,16 @@ var runtimeDom = /*#__PURE__*/Object.freeze({
     triggerEffects: triggerEffects,
     isTracking: isTracking,
     computed: computed,
+    ref: ref,
+    isRef: isRef,
+    unRef: unRef,
+    proxyRefs: proxyRefs,
     reactive: reactive,
     readonly: readonly,
     isReactive: isReactive,
     isReadonly: isReadonly,
     shallowReadonly: shallowReadonly,
-    isProxy: isProxy,
-    ref: ref,
-    isRef: isRef,
-    unRef: unRef,
-    proxyRefs: proxyRefs
+    isProxy: isProxy
 });
 
 function compileToFunction(template) {
