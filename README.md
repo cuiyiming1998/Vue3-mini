@@ -1,7 +1,7 @@
 
-## vue3-mini
+## Vue3-mini
 
-手写一遍vue3!
+手写一遍Vue3!
 
 #### runtime-core
 
