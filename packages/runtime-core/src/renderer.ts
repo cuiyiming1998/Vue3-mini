@@ -166,7 +166,8 @@ export function createRenderer(options) {
     // 头部如果相同 i ++ 一直找到不同的位置为止
     let i = 0
     const l2 = c2.length
-    let e1 = c1.length - 1
+    const l1 = c1.length
+    let e1 = l1 - 1
     let e2 = l2 - 1
 
     function isSameVNodeType(n1, n2) {
@@ -180,7 +181,7 @@ export function createRenderer(options) {
       const n2 = c2[i]
 
       if (isSameVNodeType(n1, n2)) {
-        // 如果type key相同 则调用patch去对比props和children
+        // 如果type key相同 则调用patch去更新props和children
         console.log(
           '两个 child 相等，接下来对比这两个 child 节点(从左往右比对)'
         )
@@ -231,6 +232,7 @@ export function createRenderer(options) {
         // 如果大于c2.length 则说明是右侧加 锚点为null 否则是左侧加 锚点为i + 1
         const nextPos = e2 + 1
         const anchor = nextPos < l2 ? c2[nextPos].el : null
+        // 循环patch创建
         while (i <= e2) {
           // 创建新的节点 此时n1为null
           patch(null, c2[i], container, parentComponent, anchor)
