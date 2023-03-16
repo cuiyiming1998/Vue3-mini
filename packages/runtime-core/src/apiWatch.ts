@@ -2,32 +2,32 @@ import { ReactiveEffect } from './../../reactivity/src/effect'
 import { queuePreFlushCb } from './scheduler'
 
 export function watchEffect(source) {
-	function job() {
-		effect.run()
-	}
+  function job() {
+    effect.run()
+  }
 
-	let cleanup
+  let cleanup
 
-	const onCleanup = fn => {
-		cleanup = effect.onStop = () => {
-			fn()
-		}
-	}
-	function getter() {
-		// 初始化的时候不调用
-		if (cleanup) {
-			cleanup()
-		}
-		source(onCleanup)
-	}
+  const onCleanup = (fn) => {
+    cleanup = effect.onStop = () => {
+      fn()
+    }
+  }
+  function getter() {
+    // 初始化的时候不调用
+    if (cleanup)
+      cleanup()
 
-	const effect = new ReactiveEffect(getter, () => {
-		queuePreFlushCb(job)
-	})
+    source(onCleanup)
+  }
 
-	effect.run()
+  const effect = new ReactiveEffect(getter, () => {
+    queuePreFlushCb(job)
+  })
 
-	return () => {
-		effect.stop()
-	}
+  effect.run()
+
+  return () => {
+    effect.stop()
+  }
 }

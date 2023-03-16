@@ -1,4 +1,4 @@
-import { getCurrentInstance } from "./component";
+import { getCurrentInstance } from './component'
 
 export function provide(key, value) {
   // 存
@@ -34,11 +34,12 @@ export function inject(key, defaultValue) {
     const parentProvides = currentInstance.parent.provides
     if (key in parentProvides) {
       return parentProvides[key]
-    } else if (defaultValue) {
+    }
+    else if (defaultValue) {
       // 如果没有找到 且有default 则赋值
-      if (typeof defaultValue === 'function') {
+      if (typeof defaultValue === 'function')
         return defaultValue()
-      }
+
       return defaultValue
     }
   }

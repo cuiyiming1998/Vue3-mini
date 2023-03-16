@@ -4,21 +4,21 @@ const prevChildren = 'newChildren'
 const nextChildren = [h('div', {}, 'A'), h('div', {}, 'B')]
 
 export default {
-	name: 'ArrayToText',
+  name: 'ArrayToText',
 
-	setup() {
-		const isChange = ref(false)
-		window.isChange = isChange
+  setup() {
+    const isChange = ref(false)
+    window.isChange = isChange
 
-		return {
-			isChange
-		}
-	},
+    return {
+      isChange,
+    }
+  },
 
-	render() {
-		const self = this
-		return self.isChange === true
-			? h('div', {}, nextChildren)
-			: h('div', {}, prevChildren)
-	}
+  render() {
+    const self = this
+    return self.isChange === true
+      ? h('div', {}, nextChildren)
+      : h('div', {}, prevChildren)
+  },
 }

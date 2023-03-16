@@ -4,16 +4,16 @@ export * from './shapeFlags'
 export const extend = Object.assign
 export const EMPTY_OBJ = {}
 
-export const isObject = val => {
-	return val !== null && typeof val === 'object'
+export const isObject = (val) => {
+  return val !== null && typeof val === 'object'
 }
 
 export const hasChanged = (value, newValue) => {
-	return !Object.is(value, newValue)
+  return !Object.is(value, newValue)
 }
 
 export const hasOwn = (val, key) => {
-	return Object.prototype.hasOwnProperty.call(val, key)
+  return Object.prototype.hasOwnProperty.call(val, key)
 }
 
 // 横杠转驼峰add-foo -> addFoo
@@ -30,7 +30,9 @@ export const capitalize = (str: string) => {
 
 // 驼峰加on
 export const toHandlerKey = (str: string) => {
-  return str ? 'on' + capitalize(str) : ''
+  return str ? `on${capitalize(str)}` : ''
 }
 
-export const isString = (val) => { return typeof val === 'string' }
+export const isString = (val) => {
+  return typeof val === 'string'
+}

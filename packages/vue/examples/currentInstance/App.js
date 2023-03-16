@@ -1,4 +1,4 @@
-import { h, getCurrentInstance } from '../../dist/vue3-mini.esm.js'
+import { getCurrentInstance, h } from '../../dist/vue3-mini.esm.js'
 import { Foo } from './Foo.js'
 
 export const App = {
@@ -10,5 +10,5 @@ export const App = {
   setup() {
     const instance = getCurrentInstance()
     console.log('App:', instance)
-  }
+  },
 }

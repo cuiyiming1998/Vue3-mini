@@ -1,10 +1,10 @@
-import { reactive, computed } from '../src/index'
-import { describe, it, expect, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
+import { computed, reactive } from '../src/index'
 
 describe('computed', () => {
   it('happy path', () => {
     const user = reactive({
-      age: 1
+      age: 1,
     })
 
     const age = computed(() => {
@@ -16,7 +16,7 @@ describe('computed', () => {
 
   it('should compute lazily', () => {
     const value = reactive({
-      foo: 1
+      foo: 1,
     })
     const getter = vi.fn(() => {
       return value.foo
@@ -43,6 +43,5 @@ describe('computed', () => {
     // should not compute again
     cValue.value
     expect(getter).toHaveBeenCalledTimes(2)
-
   })
 })

@@ -1,4 +1,4 @@
-import { h, getCurrentInstance } from '../../dist/vue3-mini.esm.js'
+import { getCurrentInstance, h } from '../../dist/vue3-mini.esm.js'
 
 export const Foo = {
   name: 'Foo',
@@ -9,5 +9,5 @@ export const Foo = {
   },
   render() {
     return h('div', {}, 'foo')
-  }
+  },
 }

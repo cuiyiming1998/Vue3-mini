@@ -1,13 +1,13 @@
-import { readonly, isReadonly, isProxy } from '../src/index'
-import { describe, it, expect, vi } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
+import { isProxy, isReadonly, readonly } from '../src/index'
 
 describe('readonly', () => {
   it('should make nested values readonly', () => {
     const original = {
       foo: 1,
       bar: {
-        baz: 2
-      }
+        baz: 2,
+      },
     }
     const wrapped = readonly(original)
     expect(wrapped).not.toBe(original)
@@ -22,7 +22,7 @@ describe('readonly', () => {
   it('warn when call set', () => {
     console.warn = vi.fn()
     const user = readonly({
-      age: 10
+      age: 10,
     })
     user.age = 11
     expect(console.warn).toBeCalledTimes(1)

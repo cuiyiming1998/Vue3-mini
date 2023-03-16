@@ -1,17 +1,16 @@
-import { ReactiveEffect } from './effect';
+import { ReactiveEffect } from './effect'
 
 class ComputedRefImpl {
   private _getter: any
-  private _dirty: boolean = true // 初始化dirty时为true
+  private _dirty = true // 初始化dirty时为true
   private _value: any
   private _effect: any
   constructor(getter) {
     this._getter = getter
     // 当依赖的响应式对象的值发生改变的时候 会通过scheduler 将dirty设置成true
     this._effect = new ReactiveEffect(getter, () => {
-      if (!this._dirty) {
+      if (!this._dirty)
         this._dirty = true
-      }
     })
   }
 

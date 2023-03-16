@@ -1,29 +1,33 @@
 {
   "name": "vue3-proxy",
   "version": "1.0.0",
+  "description": "",
+  "author": "cuiyiming1998",
+  "license": "ISC",
+  "homepage": "https://github.com/cuiyiming1998/Vue3-mini/#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cuiyiming1998/Vue3-mini.git"
+  },
+  "bugs": {
+    "url": "https://github.com/cuiyiming1998/Vue3-mini/issues"
+  },
+  "keywords": [],
   "main": "lib/vue3-mini.cjs.js",
   "module": "lib/vue3-mini.esm.js",
+  "scripts": {
+    "test": "vitest",
+    "build": "rollup -c rollup.config.js",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
+  },
   "devDependencies": {
+    "@antfu/eslint-config": "^0.36.0",
     "@rollup/plugin-typescript": "^8.4.0",
+    "eslint": "^8.36.0",
     "rollup": "^2.79.0",
     "tslib": "^2.4.0",
     "typescript": "^4.7.3",
     "vitest": "^0.22.1"
-  },
-  "scripts": {
-    "test": "vitest",
-    "build": "rollup -c rollup.config.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/cuiyiming1998/vue3-proxy.git"
-  },
-  "keywords": [],
-  "author": "yiming.cui <cuiyiming@thinkenergy.net.cn>",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/cuiyiming1998/vue3-proxy/issues"
-  },
-  "homepage": "https://github.com/cuiyiming1998/vue3-proxy#readme",
-  "description": ""
+  }
 }

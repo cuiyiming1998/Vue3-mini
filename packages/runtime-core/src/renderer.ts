@@ -1,8 +1,8 @@
+import { EMPTY_OBJ, ShapeFlags } from '@vue3-mini/shared'
+import { effect } from '@vue3-mini/reactivity'
 import { Fragment, Text } from './vnode'
-import { ShapeFlags, EMPTY_OBJ } from '@vue3-mini/shared'
 import { createComponentInstance, setupComponent } from './component'
 import { createAppAPI } from './createApp'
-import { effect } from '@vue3-mini/reactivity'
 import { shouldUpdateComponent } from './componentUpdateUtils'
 import { queueJobs } from './scheduler'
 
@@ -15,7 +15,7 @@ export function createRenderer(options) {
     remove: hostRemove,
     setElementText: hostSetElementText,
     createText: hostCreateText,
-    setText: hostSetText
+    setText: hostSetText,
   } = options
   function render(vnode, container) {
     // 调用patch方法
@@ -44,7 +44,8 @@ export function createRenderer(options) {
           // 处理element类型
           console.log('处理 Element 类型')
           processElement(n1, n2, container, parentComponent, anchor)
-        } else if (shapeFlag & ShapeFlags.STATEFUL_COMPONENT) {
+        }
+        else if (shapeFlag & ShapeFlags.STATEFUL_COMPONENT) {
           // 处理component类型
           console.log('处理 Component 类型')
           processComponent(n1, n2, container, parentComponent, anchor)
@@ -56,12 +57,13 @@ export function createRenderer(options) {
   function processText(n1, n2: any, container: any) {
     // 如果是text类型 则children为text: string
     console.log('处理 Text 节点')
-    if (null === n1) {
+    if (n1 === null) {
       // 如果n1没有 说明是初始化阶段
       // 使用hostCreateText创建text节点 然后insert
       console.log('初始化 Text 节点')
       hostInsert((n2.el = hostCreateText(n2.children as string)), container)
-    } else {
+    }
+    else {
       // update
       // 先对比一下 updated 之后的内容是否和之前的不一样
       // 在不一样的时候才需要 update text
@@ -80,7 +82,7 @@ export function createRenderer(options) {
     n2: any,
     container: any,
     parentComponent,
-    anchor
+    anchor,
   ) {
     // 如果是Fragment类型 就跳过当前节点 直接mount他的子节点children
     console.log('初始化 Fragment 类型的节点')
@@ -92,12 +94,13 @@ export function createRenderer(options) {
     n2: any,
     container: any,
     parentComponent,
-    anchor
+    anchor,
   ) {
     if (!n1) {
       // 如果没有老节点 则直接mount新节点
       mountElement(n2, container, parentComponent, anchor)
-    } else {
+    }
+    else {
       // 有老节点 调用patchElement进行对比
       patchElement(n1, n2, container, parentComponent, anchor)
     }
@@ -130,14 +133,15 @@ export function createRenderer(options) {
       // 如果 n2 的 children 是 text 类型的话
       // 就看看和之前的 n1 的 children 是不是一样的
       // 如果不一样的话直接重新设置一下 text 即可
-      if (c1 !== c2) {
+      if (c1 !== c2)
         hostSetElementText(container, c2)
-      }
+
       if (prevShapeFlag & ShapeFlags.ARRAY_CHILDREN) {
         // 如果n1的children是array 那么需要清空children
         unmountChildren(n1.children)
       }
-    } else {
+    }
+    else {
       // 新节点为array类型
       if (prevShapeFlag & ShapeFlags.TEXT_CHILDREN) {
         // 老节点为text
@@ -145,7 +149,8 @@ export function createRenderer(options) {
         hostSetElementText(container, '')
         // 2. mountChildren
         mountChildren(c2, container, parentComponent, anchor)
-      } else {
+      }
+      else {
         // 如果之前是 array_children
         // 现在还是 array_children 的话
         // 那么我们就需要对比两个 children 走diff算法了
@@ -159,7 +164,7 @@ export function createRenderer(options) {
     c2,
     container,
     parentComponent,
-    parentAnchor
+    parentAnchor,
   ) {
     // i 头指针
     // e1 e2分别为两个数组的尾指针
@@ -183,10 +188,11 @@ export function createRenderer(options) {
       if (isSameVNodeType(n1, n2)) {
         // 如果type key相同 则调用patch去更新props和children
         console.log(
-          '两个 child 相等，接下来对比这两个 child 节点(从左往右比对)'
+          '两个 child 相等，接下来对比这两个 child 节点(从左往右比对)',
         )
         patch(n1, n2, container, parentComponent, parentAnchor)
-      } else {
+      }
+      else {
         console.log('两个 child 不相等(从左往右比对)')
         console.log(`prevChild:${n1}`)
         console.log(`nextChild:${n2}`)
@@ -204,10 +210,11 @@ export function createRenderer(options) {
       if (isSameVNodeType(n1, n2)) {
         // 如果type key相同 则调用patch去对比props和children
         console.log(
-          '两个 child 相等，接下来对比这两个 child 节点(从右往左比对)'
+          '两个 child 相等，接下来对比这两个 child 节点(从右往左比对)',
         )
         patch(n1, n2, container, parentComponent, parentAnchor)
-      } else {
+      }
+      else {
         console.log('两个 child 不相等(从右往左比对)')
         console.log(`prevChild:${n1}`)
         console.log(`nextChild:${n2}`)
@@ -239,22 +246,24 @@ export function createRenderer(options) {
           i++
         }
       }
-    } else if (i > e2) {
+    }
+    else if (i > e2) {
       // 新的比老的短
       // i > e2
       while (i <= e1) {
         hostRemove(c1[i].el)
         i++
       }
-    } else {
+    }
+    else {
       // 乱序的部分 中间对比
       // 左右两边都比对完了，然后剩下的就是中间部位顺序变动的
       // 例如下面的情况
       // a,b,[c,d,e],f,g
       // a,b,[e,c,d],f,g
       // i -> 左侧 e1 -> 更新前的e  e2 -> 更新后的e
-      let s1 = i
-      let s2 = i
+      const s1 = i
+      const s2 = i
       const toBePatched = e2 - s2 + 1 // 需要patch的新节点的数量
       let patched = 0 // 已经patch过的数量
       // 通过key建立映射表
@@ -264,9 +273,8 @@ export function createRenderer(options) {
       // 创建数组的时候给定数组的长度，这个是性能最快的写法
       const newIndexToOldIndexMap = new Array(toBePatched)
       // 初始化为 0 , 后面处理的时候 如果发现是 0 的话，那么就说明新值在老的里面不存在
-      for (let i = 0; i < toBePatched; i++) {
+      for (let i = 0; i < toBePatched; i++)
         newIndexToOldIndexMap[i] = 0
-      }
 
       // 是否移动了位置
       let moved = false
@@ -293,7 +301,8 @@ export function createRenderer(options) {
         if (prevChild.key != null) {
           // 这里就可以通过key快速的查找了， 看看在新的里面这个节点存在不存在
           newIndex = keyToNewIndex.get(prevChild.key)
-        } else {
+        }
+        else {
           // 如果没key 的话，那么只能是遍历所有的新节点来确定当前节点存在不存在了
           for (let j = s2; j <= e2; j++) {
             if (isSameVNodeType(prevChild, c2[j])) {
@@ -310,7 +319,8 @@ export function createRenderer(options) {
         if (newIndex === undefined) {
           // 如果newIndex没有被赋值, 则说明节点被删除了
           hostRemove(prevChild.el)
-        } else {
+        }
+        else {
           // 老节点还存在
           console.log('新老节点都存在')
 
@@ -321,7 +331,8 @@ export function createRenderer(options) {
           if (newIndex >= maxNewIndexSoFar) {
             // 大于等于记录的点, 说明相对位置没有改变
             maxNewIndexSoFar = newIndex
-          } else {
+          }
+          else {
             // 新得到的index比记录的点小 说明需要移动位置
             moved = true
           }
@@ -370,7 +381,8 @@ export function createRenderer(options) {
             // 1. j 已经没有了 说明剩下的都需要移动了
             // 2. 最长子序列里面的值和当前的值匹配不上， 说明当前元素需要移动
             hostInsert(nextChild.el, container, anchor)
-          } else {
+          }
+          else {
             // 在最长递增子序列内, 直接移动指针
             j--
           }
@@ -400,9 +412,8 @@ export function createRenderer(options) {
         const prevProp = oldProps[key]
         const nextProp = newProps[key]
         // 获取改变前后的prop 进行更新
-        if (prevProp !== nextProp) {
+        if (prevProp !== nextProp)
           hostPatchProp(el, key, prevProp, nextProp)
-        }
       }
       // 2. oldProps 有，而 newProps 没有了
       // 之前： {id:1,tId:2}  更新后： {id:1}
@@ -410,9 +421,8 @@ export function createRenderer(options) {
       if (oldProps !== EMPTY_OBJ) {
         for (const key in oldProps) {
           // 如果更新后key不在newProps里 删除
-          if (!(key in newProps)) {
+          if (!(key in newProps))
             hostPatchProp(el, key, oldProps[key], null)
-          }
         }
       }
     }
@@ -431,7 +441,8 @@ export function createRenderer(options) {
       // 这里 children 就是 test ，只需要渲染一下就完事了
       console.log(`处理文本 ${children}`)
       hostSetElementText(el, children)
-    } else if (shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
+    }
+    else if (shapeFlag & ShapeFlags.ARRAY_CHILDREN) {
       // 如果是array类型 调用mountChildren
       // 举个栗子
       // render(){
@@ -468,7 +479,7 @@ export function createRenderer(options) {
 
   function mountChildren(children, container, parentComponent, anchor) {
     // 循环children, 再次调用patch
-    children.forEach(v => {
+    children.forEach((v) => {
       patch(null, v, container, parentComponent, anchor)
     })
   }
@@ -478,12 +489,13 @@ export function createRenderer(options) {
     n2: any,
     container: any,
     parentComponent,
-    anchor
+    anchor,
   ) {
     if (!n1) {
       // 如果没有n1 那么就是初始化mount
       mountComponent(n2, container, parentComponent, anchor)
-    } else {
+    }
+    else {
       updateComponent(n1, n2)
     }
   }
@@ -501,7 +513,8 @@ export function createRenderer(options) {
       // 在update 中调用的 next 就变成了 n2了
       // TODO 需要在 update 中处理支持 next 的逻辑
       instance.update()
-    } else {
+    }
+    else {
       // 不执行update的话 还是需要给el vnode重新赋值的
       console.log(`组件不需要更新: ${instance}`)
       n2.el = n1.el
@@ -513,12 +526,12 @@ export function createRenderer(options) {
     initialVNode: any,
     container: any,
     parentComponent,
-    anchor
+    anchor,
   ) {
     // 创建组件实例
     const instance = (initialVNode.component = createComponentInstance(
       initialVNode,
-      parentComponent
+      parentComponent,
     ))
     console.log(`创建组件实例:${instance.type.name}`)
     // 初始化组件
@@ -531,7 +544,7 @@ export function createRenderer(options) {
     instance: any,
     initialVNode: any,
     container: any,
-    anchor
+    anchor,
   ) {
     // 调用render时 会触发响应式对象ref/reactive的get收集依赖
     // 响应式对象改变了 会触发内部的函数 自动调用render生成新的subTree
@@ -549,7 +562,7 @@ export function createRenderer(options) {
           // 可在 render 函数中通过 this 来使用 proxy
           const subTree = (instance.subTree = instance.render.call(
             proxy,
-            proxy
+            proxy,
           ))
 
           // 这里触发beforeMount
@@ -576,7 +589,8 @@ export function createRenderer(options) {
           console.log(`${instance.type.name}:触发 mounted hook`)
           // 更新instance的状态为isMounted 依赖变更时进入else分支
           instance.isMounted = true
-        } else {
+        }
+        else {
           // 响应式对象发生改变时会进到这里
           // 拿到新的 vnode ，然后和之前的 vnode 进行对比
           console.log(`setupRenderEffect -> ${instance.type.name} -> update`)
@@ -615,8 +629,8 @@ export function createRenderer(options) {
         scheduler() {
           console.log('组件更新 ---- 执行scheduler储存jobs')
           queueJobs(instance.update)
-        }
-      }
+        },
+      },
     )
   }
 
@@ -632,7 +646,7 @@ export function createRenderer(options) {
   }
 
   return {
-    createApp: createAppAPI(render)
+    createApp: createAppAPI(render),
   }
 }
 
@@ -654,16 +668,15 @@ function getSequence(arr) {
       v = result.length - 1
       while (u < v) {
         c = (u + v) >> 1
-        if (arr[result[c]] < arrI) {
+        if (arr[result[c]] < arrI)
           u = c + 1
-        } else {
+        else
           v = c
-        }
       }
       if (arrI < arr[result[u]]) {
-        if (u > 0) {
+        if (u > 0)
           p[i] = result[u - 1]
-        }
+
         result[u] = i
       }
     }

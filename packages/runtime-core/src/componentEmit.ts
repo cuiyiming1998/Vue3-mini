@@ -1,4 +1,4 @@
-import { camelize, toHandlerKey } from "@vue3-mini/shared"
+import { camelize, toHandlerKey } from '@vue3-mini/shared'
 
 /**
  * description

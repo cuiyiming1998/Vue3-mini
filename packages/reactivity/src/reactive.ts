@@ -1,9 +1,9 @@
-import { isObject } from '@vue3-mini/shared';
+import { isObject } from '@vue3-mini/shared'
 import { mutableHandlers, readonlyHandlers, shallowReadonlyHandlers } from './baseHandlers'
 
 export const enum ReactiveFlags {
   IS_REACTIVE = '__v_isReactive',
-  IS_READONLY = '__v_isReadonly'
+  IS_READONLY = '__v_isReadonly',
 }
 
 export function reactive(raw) {

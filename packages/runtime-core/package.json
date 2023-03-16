@@ -2,13 +2,13 @@
   "name": "@vue3-mini/runtime-core",
   "version": "1.0.0",
   "description": "",
+  "author": "",
+  "license": "ISC",
+  "keywords": [],
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
     "@vue3-mini/reactivity": "workspace:^1.0.0",
     "@vue3-mini/shared": "workspace:^1.0.0"

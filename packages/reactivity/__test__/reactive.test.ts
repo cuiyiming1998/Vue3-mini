@@ -1,10 +1,10 @@
-import { reactive, isReactive, isProxy } from '../src/index'
-import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { describe, expect, it } from 'vitest'
+import { isProxy, isReactive, reactive } from '../src/index'
 
 describe('reactive', () => {
   it('happy path', () => {
     const original = {
-      foo: 1
+      foo: 1,
     }
     const observed = reactive(original)
     expect(observed).not.toBe(original)
@@ -17,9 +17,9 @@ describe('reactive', () => {
   it('nested reactive', () => {
     const original = {
       nested: {
-        foo: 1
+        foo: 1,
       },
-      array: [{ bar: 2 }]
+      array: [{ bar: 2 }],
     }
 
     const observed = reactive(original)

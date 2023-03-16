@@ -5,23 +5,23 @@ let shouldTrack = false // 代表当前是否需要 track 收集依赖
 const targetMap = new WeakMap()
 
 export class ReactiveEffect {
-	private _fn: any
-	public scheduler: Function | undefined
-  public active: boolean = true
-	public deps: any[] = []
+  private _fn: any
+  public scheduler: Function | undefined
+  public active = true
+  public deps: any[] = []
   public onStop?: () => void
-	constructor(_fn, scheduler?) {
-    console.log("创建 ReactiveEffect 对象");
-		this._fn = _fn
-		this.scheduler = scheduler
-	}
+  constructor(_fn, scheduler?) {
+    console.log('创建 ReactiveEffect 对象')
+    this._fn = _fn
+    this.scheduler = scheduler
+  }
 
-	run() {
+  run() {
     // 将this赋值给activeEffect 当前正在执行的effect
-		activeEffect = this
-    if (!this.active) {
+    activeEffect = this
+    if (!this.active)
       return this._fn()
-    }
+
     shouldTrack = true
     // shouldTrack为true
     // 执行fn收集依赖
@@ -33,9 +33,9 @@ export class ReactiveEffect {
     shouldTrack = false
 
     return result
-	}
+  }
 
-	stop() {
+  stop() {
     // 停止响应式
     if (this.active) {
       // 清空dep
@@ -47,43 +47,41 @@ export class ReactiveEffect {
       // 修改active状态为false
       this.active = false
     }
-	}
+  }
 }
 
 function cleanupEffect(effect) {
   // 清除effect.deps
   // 找到所有依赖这个 effect 的响应式对象
   // 从这些响应式对象里面把 effect 给删除掉
-	effect.deps.forEach((dep: any) => {
-		dep.delete(effect)
-	})
+  effect.deps.forEach((dep: any) => {
+    dep.delete(effect)
+  })
   effect.deps.length = 0
 }
 
 export function track(target, key) {
-  if (!isTracking()) {
+  if (!isTracking())
     return
-  }
-  console.log(`触发 track -> target: ${target} key:${key}`);
-  // 从targetMap中获取depsMap
-	let depsMap = targetMap.get(target)
-	if (!depsMap) {
-		targetMap.set(target, (depsMap = new Map()))
-	}
 
-	let dep = depsMap.get(key)
-	if (!dep) {
-		depsMap.set(key, (dep = new Set()))
-	}
+  console.log(`触发 track -> target: ${target} key:${key}`)
+  // 从targetMap中获取depsMap
+  let depsMap = targetMap.get(target)
+  if (!depsMap)
+    targetMap.set(target, (depsMap = new Map()))
+
+  let dep = depsMap.get(key)
+  if (!dep)
+    depsMap.set(key, (dep = new Set()))
 
   // 寻找到当前target, key的dep后添加effect
   trackEffects(dep)
 }
 
 export function trackEffects(dep) {
-  if (dep.has(activeEffect)) {
+  if (dep.has(activeEffect))
     return
-  }
+
   // dep添加effect
   // activeEffect的上层依赖中也添加dep
   dep.add(activeEffect)
@@ -99,8 +97,8 @@ export function isTracking() {
 }
 
 export function trigger(target, key) {
-	let depsMap = targetMap.get(target)
-	let dep = depsMap.get(key)
+  const depsMap = targetMap.get(target)
+  const dep = depsMap.get(key)
   // 获取target key对应的dep
   triggerEffects(dep)
 }
@@ -108,32 +106,33 @@ export function triggerEffects(dep) {
   // 循环dep 如果有scheduler 则执行
   // 否则run
   for (const effect of dep) {
-		if (effect.scheduler) {
+    if (effect.scheduler) {
       // scheduler 可以让用户自己选择调用的时机
       // 这样就可以灵活的控制调用了
       // 在 runtime-core 中，就是使用了 scheduler 实现了在 next ticker 中调用的逻辑
-			effect.scheduler()
-		} else {
-			effect.run()
-		}
-	}
+      effect.scheduler()
+    }
+    else {
+      effect.run()
+    }
+  }
 }
 export function effect(fn, options: any = {}) {
-	const _effect = new ReactiveEffect(fn, options.scheduler)
+  const _effect = new ReactiveEffect(fn, options.scheduler)
   // 创建activeEffect
   extend(_effect, options)
   // 创建时执行一次
-	_effect.run()
+  _effect.run()
 
   // 创建返回值 effect会返回内部函数
-	const runner: any = _effect.run.bind(_effect)
-	runner.effect = _effect
+  const runner: any = _effect.run.bind(_effect)
+  runner.effect = _effect
 
   // 把 _effect.run 这个方法返回
   // 让用户可以自行选择调用的时机（调用 fn）
-	return runner
+  return runner
 }
 
 export function stop(runner) {
-	runner.effect.stop()
+  runner.effect.stop()
 }

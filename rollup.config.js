@@ -1,4 +1,4 @@
-import typescript from "@rollup/plugin-typescript"
+import typescript from '@rollup/plugin-typescript'
 
 export default {
   input: './packages/vue/src/index.ts',
@@ -7,14 +7,14 @@ export default {
     // 2. esm -> 标准化模块规范
     {
       format: 'cjs',
-      file: 'packages/vue/dist/vue3-mini.cjs.js'
+      file: 'packages/vue/dist/vue3-mini.cjs.js',
     },
     {
       format: 'es',
-      file: 'packages/vue/dist/vue3-mini.esm.js'
+      file: 'packages/vue/dist/vue3-mini.esm.js',
     },
   ],
   plugins: [
-    typescript()
-  ]
+    typescript(),
+  ],
 }

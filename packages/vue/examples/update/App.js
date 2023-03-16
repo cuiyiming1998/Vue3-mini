@@ -1,18 +1,18 @@
 import { h, ref } from '../../dist/vue3-mini.esm.js'
 
 export const App = {
-	name: 'App',
+  name: 'App',
 
-	setup() {
-		const count = ref(0)
+  setup() {
+    const count = ref(0)
 
-		const onClick = () => {
-			count.value++
-		}
+    const onClick = () => {
+      count.value++
+    }
 
     const props = ref({
       foo: 'foo',
-      bar: 'bar'
+      bar: 'bar',
     })
 
     const onChangePropsDemo1 = () => {
@@ -25,26 +25,26 @@ export const App = {
 
     const onChangePropsDemo3 = () => {
       props.value = {
-        foo: 'foo'
+        foo: 'foo',
       }
     }
 
-		return {
-			count,
-			onClick,
+    return {
+      count,
+      onClick,
       onChangePropsDemo1,
       onChangePropsDemo2,
       onChangePropsDemo3,
-      props
-		}
-	},
+      props,
+    }
+  },
 
-	render() {
-		return h('div', { id: 'root', ...this.props }, [
+  render() {
+    return h('div', { id: 'root', ...this.props }, [
       h('button', { onClick: this.onClick }, 'click'),
       h('button', { onClick: this.onChangePropsDemo1 }, 'changeProps - 值改变了 - 修改'),
-      h('button', { onClick: this.onChangePropsDemo2 }, `changeProps - 值变成了undefined - 删除`),
-      h('button', { onClick: this.onChangePropsDemo3 }, `changeProps - key在新的里面没有了 - 删除`),
-		])
-	}
+      h('button', { onClick: this.onChangePropsDemo2 }, 'changeProps - 值变成了undefined - 删除'),
+      h('button', { onClick: this.onChangePropsDemo3 }, 'changeProps - key在新的里面没有了 - 删除'),
+    ])
+  },
 }
